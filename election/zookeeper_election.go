@@ -153,11 +153,14 @@ func (z *ZooKeeperElection) handleConnectionEvents(sessionEvents <-chan zk.Event
 			switch event.State {
 			case zk.StateDisconnected:
 				log.Println("Disconnected from Zookeeper")
+				z.Start()
+				return
 			case zk.StateConnected:
 				log.Println("Connected to Zookeeper")
 			case zk.StateExpired:
 				log.Println("Zookeeper session expired, attempting to reconnect")
 				z.Start()
+				return
 			}
 		}
 	}
