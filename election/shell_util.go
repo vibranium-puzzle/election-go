@@ -1,12 +1,12 @@
-package shell
+package election
 
 import (
 	"bytes"
 	"os/exec"
 )
 
-func Exec(cmd string) (int, string, string, error) {
-	command := exec.Command(cmd)
+func Exec(cmd *ScriptCommand) (int, string, string, error) {
+	command := exec.Command(cmd.Name, cmd.Args...)
 	var outputBuf, errBuf bytes.Buffer
 	command.Stdout = &outputBuf
 	command.Stderr = &errBuf
