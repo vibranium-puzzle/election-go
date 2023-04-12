@@ -2,24 +2,20 @@ package shell
 
 import (
 	"bytes"
-	"errors"
 	"os/exec"
 )
 
 func Exec(cmd string) (int, string, string, error) {
-	command := exec.Command("sh", "-c", cmd)
-	inputContent, inputErr := command.Output()
-	errorContent, errorErr := command.CombinedOutput()
+	command := exec.Command(cmd)
+	var outputBuf, errBuf bytes.Buffer
+	command.Stdout = &outputBuf
+	command.Stderr = &errBuf
 
-	stdout := string(bytes.TrimSpace(inputContent))
-	stderr := string(bytes.TrimSpace(errorContent))
-
-	if inputErr != nil || errorErr != nil {
-		err := errors.New("failed to execute command")
-		return -1, stdout, stderr, err
+	if err := command.Run(); err != nil {
+		return -1, outputBuf.String(), errBuf.String(), err
 	}
 
 	rc := command.ProcessState.ExitCode()
 
-	return rc, stdout, stderr, nil
+	return rc, outputBuf.String(), errBuf.String(), nil
 }
