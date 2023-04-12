@@ -1,5 +1,10 @@
 package election
 
+type ScriptCommand struct {
+	Name string
+	Args []string
+}
+
 type FloatIpConfig struct {
 	Dev         string
 	VirtualDev  string
@@ -8,28 +13,37 @@ type FloatIpConfig struct {
 	NetworkMask string
 	Gateway     string
 
-	CommandIpUp   string
-	CommandIpDown string
-	CommandArp    string
+	CommandIpUp   *ScriptCommand
+	CommandIpDown *ScriptCommand
+	CommandArp    *ScriptCommand
 }
 
-func (f *FloatIpConfig) UpCmd() string {
-	if f.CommandIpUp != "" {
+func (f *FloatIpConfig) UpCmd() *ScriptCommand {
+	if f.CommandIpUp != nil {
 		return f.CommandIpUp
 	}
-	return "/sbin/ifconfig " + f.VirtualDev + " " + f.VirtualIp + " netmask " + f.NetworkMask + " up"
+	return &ScriptCommand{
+		Name: "/sbin/ifconfig",
+		Args: []string{f.VirtualDev, f.VirtualIp, "netmask", f.NetworkMask, "up"},
+	}
 }
 
-func (f *FloatIpConfig) DownCmd() string {
-	if f.CommandIpDown != "" {
+func (f *FloatIpConfig) DownCmd() *ScriptCommand {
+	if f.CommandIpDown != nil {
 		return f.CommandIpDown
 	}
-	return "/sbin/ifconfig " + f.VirtualDev + " " + f.VirtualIp + " netmask " + f.NetworkMask + " down"
+	return &ScriptCommand{
+		Name: "/sbin/ifconfig",
+		Args: []string{f.VirtualDev, f.VirtualIp, "netmask", f.NetworkMask, "down"},
+	}
 }
 
-func (f *FloatIpConfig) ArpCmd() string {
-	if f.CommandArp != "" {
+func (f *FloatIpConfig) ArpCmd() *ScriptCommand {
+	if f.CommandArp != nil {
 		return f.CommandArp
 	}
-	return "/sbin/arping -I " + f.Dev + " -w 0 -c 1 -U -s " + f.VirtualIp + " " + f.VirtualIp
+	return &ScriptCommand{
+		Name: "/sbin/arping",
+		Args: []string{"-I", f.Dev, "-w", "0", "-c", "1", "-U", "-s", f.VirtualIp, f.VirtualIp},
+	}
 }

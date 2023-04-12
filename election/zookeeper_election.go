@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-zookeeper/zk"
-	"github.com/vibranium-puzzle/election-go/shell"
 	"log"
 	"net"
 	"sort"
@@ -284,7 +283,7 @@ func (z *ZooKeeperElection) ensureFloatIPsExist() {
 		if !exists {
 			log.Printf("Adding float IP %s on device %s\n", floatIPConfig.VirtualIp, floatIPConfig.Dev)
 			cmd := floatIPConfig.UpCmd()
-			rc, stdout, stderr, err := shell.Exec(cmd)
+			rc, stdout, stderr, err := Exec(cmd)
 			if err != nil {
 				log.Printf("Error running command '%s': %s", cmd, err)
 			} else if rc != 0 {
@@ -307,7 +306,7 @@ func (z *ZooKeeperElection) ensureFloatIPsNotExist() {
 		if exists {
 			log.Printf("Removing float IP %s from device %s\n", floatIPConfig.VirtualIp, floatIPConfig.Dev)
 			cmd := floatIPConfig.DownCmd()
-			rc, stdout, stderr, err := shell.Exec(cmd)
+			rc, stdout, stderr, err := Exec(cmd)
 			if err != nil {
 				log.Printf("Error running command '%s': %s", cmd, err)
 			} else if rc != 0 {
@@ -345,7 +344,7 @@ func (z *ZooKeeperElection) upFloatIPs() {
 	for _, floatIPConfig := range z.config.FloatIpConfigList {
 		cmd := floatIPConfig.UpCmd()
 		log.Printf("Executing UpCmd: %s", cmd)
-		rc, stdout, stderr, err := shell.Exec(cmd)
+		rc, stdout, stderr, err := Exec(cmd)
 		if err != nil {
 			log.Printf("Error running command '%s': %s", cmd, err)
 		} else if rc != 0 {
@@ -359,7 +358,7 @@ func (z *ZooKeeperElection) upFloatIPs() {
 func (z *ZooKeeperElection) downFloatIPs() {
 	for _, floatIPConfig := range z.config.FloatIpConfigList {
 		cmd := floatIPConfig.DownCmd()
-		rc, stdout, stderr, err := shell.Exec(cmd)
+		rc, stdout, stderr, err := Exec(cmd)
 		if err != nil {
 			log.Printf("Error running command '%s': %s", cmd, err)
 		} else if rc != 0 {
@@ -373,7 +372,7 @@ func (z *ZooKeeperElection) downFloatIPs() {
 func (z *ZooKeeperElection) arpFloatIPs() {
 	for _, floatIPConfig := range z.config.FloatIpConfigList {
 		cmd := floatIPConfig.ArpCmd()
-		rc, stdout, stderr, err := shell.Exec(cmd)
+		rc, stdout, stderr, err := Exec(cmd)
 		if err != nil {
 			log.Printf("Error running command '%s': %s", cmd, err)
 		} else if rc != 0 {
