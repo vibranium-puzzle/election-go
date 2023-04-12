@@ -388,6 +388,7 @@ func (z *ZooKeeperElection) Close() {
 	z.hasLeadership = false
 	z.rwMutex.Unlock()
 	close(z.stop)
+	z.ensureFloatIPsNotExist()
 	if z.conn != nil {
 		z.conn.Close()
 	}
