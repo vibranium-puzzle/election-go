@@ -42,8 +42,8 @@ type ZooKeeperElection struct {
 }
 
 func NewZooKeeperElection(config ElectConfig, zkConfig ZooKeeperElectConfig) *ZooKeeperElection {
-	if config.floatIPCheckInterval <= 0 {
-		config.floatIPCheckInterval = 1 * time.Minute
+	if config.FloatIPCheckInterval <= 0 {
+		config.FloatIPCheckInterval = 5 * time.Second
 	}
 	if zkConfig.SessionTimeout <= 0 {
 		zkConfig.SessionTimeout = 30 * time.Second
@@ -258,7 +258,7 @@ func (z *ZooKeeperElection) HasLeadership() bool {
 
 func (z *ZooKeeperElection) checkFloatIPs() {
 	for {
-		time.Sleep(z.config.floatIPCheckInterval)
+		time.Sleep(z.config.FloatIPCheckInterval)
 
 		z.rwMutex.RLock()
 		isLeader := z.hasLeadership

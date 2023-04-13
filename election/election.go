@@ -17,5 +17,5 @@ type ElectListener interface {
 type ElectConfig struct {
 	ElectionListener     ElectListener
 	FloatIpConfigList    []FloatIpConfig
-	floatIPCheckInterval time.Duration
+	FloatIPCheckInterval time.Duration
 }
