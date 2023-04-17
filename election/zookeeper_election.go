@@ -290,6 +290,15 @@ func (z *ZooKeeperElection) ensureFloatIPsExist() {
 				log.Printf("Command '%s' exited with non-zero return code %d. Stdout: '%s'. Stderr: '%s'", cmd, rc, stdout, stderr)
 			} else {
 				log.Printf("Command '%s' completed successfully. Stdout: '%s'. Stderr: '%s'", cmd, stdout, stderr)
+				cmd = floatIPConfig.ArpCmd()
+				rc, stdout, stderr, err = Exec(cmd)
+				if err != nil {
+					log.Printf("Error running command '%s': %s", cmd, err)
+				} else if rc != 0 {
+					log.Printf("Command '%s' exited with non-zero return code %d. Stdout: '%s'. Stderr: '%s'", cmd, rc, stdout, stderr)
+				} else {
+					log.Printf("Command '%s' completed successfully. Stdout: '%s'. Stderr: '%s'", cmd, stdout, stderr)
+				}
 			}
 		}
 	}
