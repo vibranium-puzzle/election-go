@@ -195,24 +195,41 @@ func (z *ZooKeeperElection) electLeader() error {
 		}
 	}
 
-	if !z.firstDetected {
+	if z.firstDetected {
 		if z.hasLeadership && !prevHasLeadership {
-			log.Printf("Becoming leader (Node: %s)\n", z.myNode)
-			z.upFloatIPs()
-			z.arpFloatIPs()
-			if z.config.ElectionListener != nil {
-				z.config.ElectionListener.BecomeLeader()
-			}
+			z.becomeLeader()
 		} else if !z.hasLeadership && prevHasLeadership {
-			log.Printf("Becoming follower (Node: %s, Leader: %v)\n", z.myNode, z.leader)
-			z.downFloatIPs()
-			if z.config.ElectionListener != nil {
-				z.config.ElectionListener.BecomeFollower()
-			}
+			z.becomeFollower()
 		}
+	} else {
+		// Executes the callback function for the first time
+		if z.hasLeadership {
+			z.becomeLeader()
+		} else {
+			z.becomeFollower()
+		}
+
 		z.firstDetected = true
+
 	}
 	return nil
+}
+
+func (z *ZooKeeperElection) becomeLeader() {
+	log.Printf("Becoming leader (Node: %s)\n", z.myNode)
+	z.upFloatIPs()
+	z.arpFloatIPs()
+	if z.config.ElectionListener != nil {
+		z.config.ElectionListener.BecomeLeader()
+	}
+}
+
+func (z *ZooKeeperElection) becomeFollower() {
+	log.Printf("Becoming follower (Node: %s, Leader: %v)\n", z.myNode, z.leader)
+	z.downFloatIPs()
+	if z.config.ElectionListener != nil {
+		z.config.ElectionListener.BecomeFollower()
+	}
 }
 
 func (z *ZooKeeperElection) pollNodeList() {
