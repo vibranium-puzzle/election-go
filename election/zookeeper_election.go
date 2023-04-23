@@ -68,6 +68,11 @@ func (z *ZooKeeperElection) Start() {
 	z.ensurePathExists()
 	log.Printf("Starting ZooKeeper election")
 	for {
+		// check old connection, and disconnect
+		if z.conn != nil {
+			z.conn.Close()
+		}
+
 		conn, sessionEvents, err := zk.Connect(z.zkConfig.ZkServers, time.Second)
 		if err != nil {
 			log.Printf("Unable to connect to Zookeeper: %v", err)
@@ -171,6 +176,7 @@ func (z *ZooKeeperElection) createNode() error {
 		return fmt.Errorf("unable to create a node: %v", err)
 	}
 	z.myNode = strings.TrimPrefix(nodePath, z.zkConfig.Path+"/")
+	log.Println("node created, path ", z.myNode)
 	return nil
 }
 
