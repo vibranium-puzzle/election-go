@@ -62,6 +62,9 @@ func NewZooKeeperElection(config ElectConfig, zkConfig ZooKeeperElectConfig) *Zo
 }
 
 func (z *ZooKeeperElection) Start() {
+	z.rwMutex.Lock()
+	defer z.rwMutex.Unlock()
+
 	z.startOnce.Do(func() {
 		go z.checkFloatIPs()
 	})
@@ -87,7 +90,7 @@ func (z *ZooKeeperElection) Start() {
 		time.Sleep(3 * time.Second)
 
 		for {
-			if err := z.createNode(); err != nil {
+			if err := z.createNode(conn); err != nil {
 				log.Printf("Error creating node: %v", err)
 				continue
 			}
@@ -95,7 +98,7 @@ func (z *ZooKeeperElection) Start() {
 			break
 		}
 
-		go z.pollNodeList()
+		go z.pollNodeList(conn)
 
 		break
 	}
@@ -170,8 +173,8 @@ func (z *ZooKeeperElection) handleConnectionEvents(sessionEvents <-chan zk.Event
 	}
 }
 
-func (z *ZooKeeperElection) createNode() error {
-	nodePath, err := z.conn.Create(z.zkConfig.Path+"/"+ZkLockName, []byte{}, zk.FlagEphemeral|zk.FlagSequence, zk.WorldACL(zk.PermAll))
+func (z *ZooKeeperElection) createNode(conn *zk.Conn) error {
+	nodePath, err := conn.Create(z.zkConfig.Path+"/"+ZkLockName, []byte{}, zk.FlagEphemeral|zk.FlagSequence, zk.WorldACL(zk.PermAll))
 	if err != nil {
 		return fmt.Errorf("unable to create a node: %v", err)
 	}
@@ -238,7 +241,7 @@ func (z *ZooKeeperElection) becomeFollower() {
 	}
 }
 
-func (z *ZooKeeperElection) pollNodeList() {
+func (z *ZooKeeperElection) pollNodeList(conn *zk.Conn) {
 	ticker := time.NewTicker(z.zkConfig.PollPeriod)
 
 	for {
@@ -247,6 +250,9 @@ func (z *ZooKeeperElection) pollNodeList() {
 			ticker.Stop()
 			return
 		case <-ticker.C:
+			if conn.State() == zk.StateDisconnected || conn.State() == zk.StateExpired {
+				return
+			}
 			if err := z.electLeader(); err != nil {
 				log.Printf("Error during leader election: %v", err)
 				continue
